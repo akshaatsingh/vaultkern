@@ -1,0 +1,11 @@
+-- Migration 004: User Profile Customizations & FinTech Preferences
+ALTER TABLE users 
+    ADD COLUMN IF NOT EXISTS bio TEXT DEFAULT '',
+    ADD COLUMN IF NOT EXISTS phone_number VARCHAR(32) DEFAULT '',
+    ADD COLUMN IF NOT EXISTS country VARCHAR(64) DEFAULT 'India',
+    ADD COLUMN IF NOT EXISTS preferred_currency VARCHAR(3) DEFAULT 'INR',
+    ADD COLUMN IF NOT EXISTS tier VARCHAR(32) DEFAULT 'Metal',
+    ADD COLUMN IF NOT EXISTS avatar_style VARCHAR(32) DEFAULT 'avataaars',
+    ADD COLUMN IF NOT EXISTS card_finish VARCHAR(32) DEFAULT 'finish-space-grey',
+    ADD COLUMN IF NOT EXISTS hide_balance BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();

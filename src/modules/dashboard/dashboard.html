@@ -257,6 +257,176 @@
     </div>
   </div>
 
+  <!-- ============================================== -->
+  <!-- PROFILE & SETTINGS CUSTOMIZATION MODAL        -->
+  <!-- ============================================== -->
+  <div id="profileCustomizationModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md hidden items-center justify-center p-4 transition-all duration-300">
+    <div class="bg-white dark:bg-[#12141a] text-slate-900 dark:text-white rounded-3xl border border-slate-200 dark:border-white/10 shadow-2xl max-w-xl w-full p-6 sm:p-8 relative overflow-hidden max-h-[90vh] overflow-y-auto">
+      
+      <!-- Close Button -->
+      <button onclick="closeProfileModal()" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-500 dark:text-slate-300 flex items-center justify-center font-bold text-sm transition" title="Close">
+        ✕
+      </button>
+
+      <!-- Profile Header / Identity Summary -->
+      <div class="flex items-center space-x-4 pb-6 border-b border-slate-200 dark:border-white/10">
+        <div class="relative group cursor-pointer" onclick="randomizeAvatar()">
+          <img id="profModalAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" class="w-16 h-16 rounded-2xl bg-slate-200 dark:bg-slate-800 border-2 border-blue-500 shadow-md">
+          <span class="absolute -bottom-1 -right-1 bg-blue-600 text-white text-[10px] p-1 rounded-full shadow" title="Randomize Avatar">🎲</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center space-x-2">
+            <h3 id="profModalName" class="text-xl font-black text-slate-950 dark:text-white truncate">User Name</h3>
+            <span id="profModalTierBadge" class="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-cyan-300 border border-blue-200 dark:border-blue-500/30">METAL</span>
+          </div>
+          <p id="profModalRevtag" class="text-xs font-mono font-bold text-blue-600 dark:text-cyan-400">@username</p>
+          <p id="profModalAccountNum" class="text-[11px] font-mono text-slate-400 truncate mt-0.5">Account: VK_INR_...</p>
+        </div>
+      </div>
+
+      <!-- Settings Tabs Navigation -->
+      <div class="flex items-center space-x-2 py-4 border-b border-slate-200 dark:border-white/10 text-xs font-bold">
+        <button id="tabBtnIdentity" type="button" onclick="switchProfileTab('identity')" class="px-3.5 py-1.5 rounded-full bg-black dark:bg-white text-white dark:text-black transition">
+          Personal Details
+        </button>
+        <button id="tabBtnFintech" type="button" onclick="switchProfileTab('fintech')" class="px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition">
+          Card & Avatar
+        </button>
+        <button id="tabBtnPreferences" type="button" onclick="switchProfileTab('preferences')" class="px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition">
+          Privacy & Tier
+        </button>
+      </div>
+
+      <!-- Customization Form -->
+      <form id="profileForm" onsubmit="saveProfileChanges(event)" class="space-y-5 pt-4">
+        
+        <!-- Tab 1: Personal Details -->
+        <div id="tabContentIdentity" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Display Name</label>
+            <input id="inputProfFullName" type="text" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-white/15 bg-slate-50 dark:bg-white/5 font-semibold text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white transition">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Bio / Status Message</label>
+            <input id="inputProfBio" type="text" placeholder="e.g. Fintech enthusiast & globetrotter 🌍" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-white/15 bg-slate-50 dark:bg-white/5 font-semibold text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white transition">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Phone Number (Alerts & 2FA)</label>
+              <input id="inputProfPhone" type="tel" placeholder="+91 98765 43210" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-white/15 bg-slate-50 dark:bg-white/5 font-semibold text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white transition">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Country / Tax Residence</label>
+              <select id="selectProfCountry" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-white/15 bg-slate-50 dark:bg-[#12141a] font-semibold text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white transition">
+                <option value="India">India 🇮🇳</option>
+                <option value="United Kingdom">United Kingdom 🇬🇧</option>
+                <option value="United States">United States 🇺🇸</option>
+                <option value="United Arab Emirates">United Arab Emirates 🇦🇪</option>
+                <option value="Singapore">Singapore 🇸🇬</option>
+                <option value="Germany">Germany 🇩🇪</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Card & Avatar Customizer -->
+        <div id="tabContentFintech" class="space-y-4 hidden">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Avatar Vector Art Style</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" onclick="setAvatarStyle('avataaars')" class="style-btn py-2 px-3 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold hover:border-blue-500 transition" data-style="avataaars">Avatars</button>
+              <button type="button" onclick="setAvatarStyle('bottts')" class="style-btn py-2 px-3 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold hover:border-blue-500 transition" data-style="bottts">Fintech Bots</button>
+              <button type="button" onclick="setAvatarStyle('lorelei')" class="style-btn py-2 px-3 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold hover:border-blue-500 transition" data-style="lorelei">Lorelei</button>
+              <button type="button" onclick="setAvatarStyle('micah')" class="style-btn py-2 px-3 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold hover:border-blue-500 transition" data-style="micah">Micah</button>
+              <button type="button" onclick="setAvatarStyle('fun-emoji')" class="style-btn py-2 px-3 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold hover:border-blue-500 transition" data-style="fun-emoji">Fun Emoji</button>
+              <button type="button" onclick="setAvatarStyle('thumbs')" class="style-btn py-2 px-3 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold hover:border-blue-500 transition" data-style="thumbs">Thumbs</button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Avatar Seed / Nickname</label>
+            <div class="flex items-center space-x-2">
+              <input id="inputProfAvatarSeed" type="text" oninput="updateAvatarPreview()" placeholder="Type custom seed..." class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-white/15 bg-slate-50 dark:bg-white/5 font-semibold text-sm outline-none focus:border-blue-500 text-slate-900 dark:text-white">
+              <button type="button" onclick="randomizeAvatar()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 text-xs font-bold">
+                🎲 Randomize
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Virtual Metal Card Material / Finish</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <button type="button" onclick="selectCardFinish('finish-space-grey')" class="card-finish-btn p-3 rounded-xl border-2 border-transparent text-left finish-space-grey text-white text-[11px] font-bold shadow-md hover:scale-[1.02] transition" data-finish="finish-space-grey">
+                Space Grey
+              </button>
+              <button type="button" onclick="selectCardFinish('finish-obsidian')" class="card-finish-btn p-3 rounded-xl border-2 border-transparent text-left finish-obsidian text-white text-[11px] font-bold shadow-md hover:scale-[1.02] transition" data-finish="finish-obsidian">
+                Obsidian
+              </button>
+              <button type="button" onclick="selectCardFinish('finish-cyan')" class="card-finish-btn p-3 rounded-xl border-2 border-transparent text-left finish-cyan text-white text-[11px] font-bold shadow-md hover:scale-[1.02] transition" data-finish="finish-cyan">
+                Cyan Pulse
+              </button>
+              <button type="button" onclick="selectCardFinish('finish-gold')" class="card-finish-btn p-3 rounded-xl border-2 border-transparent text-left finish-gold text-white text-[11px] font-bold shadow-md hover:scale-[1.02] transition" data-finish="finish-gold">
+                Brushed Gold
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Privacy & Plan Tier -->
+        <div id="tabContentPreferences" class="space-y-4 hidden">
+          <!-- Discreet Mode / Hide Balance Toggle -->
+          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-between">
+            <div>
+              <div class="text-sm font-bold text-slate-900 dark:text-white">Discreet Privacy Mode</div>
+              <div class="text-xs text-slate-500">Hide wallet balances with •••••• in public spaces</div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input id="toggleHideBalance" type="checkbox" onchange="toggleDiscreetModePreview(this.checked)" class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-white/20 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+
+          <!-- Account Membership Tier -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Vaultkern Membership Tier</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button type="button" onclick="setAccountTier('Standard')" class="tier-btn py-2.5 px-3 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold hover:border-blue-500 transition" data-tier="Standard">Standard</button>
+              <button type="button" onclick="setAccountTier('Plus')" class="tier-btn py-2.5 px-3 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold hover:border-blue-500 transition" data-tier="Plus">Plus</button>
+              <button type="button" onclick="setAccountTier('Metal')" class="tier-btn py-2.5 px-3 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold hover:border-blue-500 transition" data-tier="Metal">Metal</button>
+              <button type="button" onclick="setAccountTier('Ultra')" class="tier-btn py-2.5 px-3 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold hover:border-blue-500 transition" data-tier="Ultra">Ultra</button>
+            </div>
+          </div>
+
+          <!-- Default Accounting Currency -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Primary Settlement Currency</label>
+            <select id="selectProfCurrency" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-white/15 bg-slate-50 dark:bg-[#12141a] font-semibold text-sm outline-none focus:border-blue-500 text-slate-900 dark:text-white">
+              <option value="INR">INR (₹) — Indian Rupee (Default Ledger)</option>
+              <option value="USD">USD ($) — US Dollar</option>
+              <option value="EUR">EUR (€) — Euro</option>
+              <option value="GBP">GBP (£) — British Pound</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-end space-x-3">
+          <button type="button" onclick="closeProfileModal()" class="px-5 py-2.5 rounded-full text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition">
+            Cancel
+          </button>
+          <button id="btnSaveProfile" type="submit" class="px-7 py-2.5 rounded-full bg-black dark:bg-white text-white dark:text-black font-extrabold text-xs transition shadow-lg hover:opacity-90 flex items-center space-x-2">
+            <span>Save Customizations</span>
+            <span>✓</span>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
   <!-- Revolut Floating Header -->
   <header class="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 py-4">
     <div class="max-w-7xl mx-auto bg-white/80 dark:bg-black/75 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-full px-5 py-2.5 flex items-center justify-between shadow-lg shadow-black/5 dark:shadow-none">
@@ -1170,7 +1340,176 @@
       }, 1000);
     }
 
-    // 9. 1-Click Demo Login
+    // 9. Profile Customizations & Settings Flow
+    let activeProfileStyle = 'avataaars';
+    let activeProfileFinish = 'finish-space-grey';
+    let activeProfileTier = 'Metal';
+
+    function openProfileModal() {
+      if (!currentUser) {
+        openGmailAuthModal();
+        return;
+      }
+
+      // Populate header summary
+      document.getElementById('profModalAvatar').src = currentUser.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.username}`;
+      document.getElementById('profModalName').innerText = currentUser.full_name;
+      document.getElementById('profModalRevtag').innerText = `@${currentUser.username}`;
+      document.getElementById('profModalAccountNum').innerText = currentWallet ? `Account: ${currentWallet.account_number}` : 'Standard Wallet';
+      document.getElementById('profModalTierBadge').innerText = (currentUser.tier || 'METAL').toUpperCase();
+
+      // Populate form inputs
+      document.getElementById('inputProfFullName').value = currentUser.full_name || '';
+      document.getElementById('inputProfBio').value = currentUser.bio || '';
+      document.getElementById('inputProfPhone').value = currentUser.phone_number || '';
+      document.getElementById('selectProfCountry').value = currentUser.country || 'India';
+      document.getElementById('inputProfAvatarSeed').value = currentUser.username || '';
+      document.getElementById('selectProfCurrency').value = currentUser.preferred_currency || (currentWallet ? currentWallet.currency : 'INR');
+      document.getElementById('toggleHideBalance').checked = !!currentUser.hide_balance;
+
+      activeProfileStyle = currentUser.avatar_style || 'avataaars';
+      activeProfileFinish = currentUser.card_finish || 'finish-space-grey';
+      activeProfileTier = currentUser.tier || 'Metal';
+
+      updateStyleButtons();
+      updateFinishButtons();
+      updateTierButtons();
+      switchProfileTab('identity');
+
+      const modal = document.getElementById('profileCustomizationModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeProfileModal() {
+      const modal = document.getElementById('profileCustomizationModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function switchProfileTab(tab) {
+      document.getElementById('tabContentIdentity').classList.toggle('hidden', tab !== 'identity');
+      document.getElementById('tabContentFintech').classList.toggle('hidden', tab !== 'fintech');
+      document.getElementById('tabContentPreferences').classList.toggle('hidden', tab !== 'preferences');
+
+      const activeClass = 'px-3.5 py-1.5 rounded-full bg-black dark:bg-white text-white dark:text-black transition';
+      const inactiveClass = 'px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition';
+
+      document.getElementById('tabBtnIdentity').className = tab === 'identity' ? activeClass : inactiveClass;
+      document.getElementById('tabBtnFintech').className = tab === 'fintech' ? activeClass : inactiveClass;
+      document.getElementById('tabBtnPreferences').className = tab === 'preferences' ? activeClass : inactiveClass;
+    }
+
+    function setAvatarStyle(style) {
+      activeProfileStyle = style;
+      updateStyleButtons();
+      updateAvatarPreview();
+    }
+
+    function updateStyleButtons() {
+      document.querySelectorAll('.style-btn').forEach(btn => {
+        if (btn.dataset.style === activeProfileStyle) {
+          btn.classList.add('border-blue-500', 'bg-blue-500/10', 'text-blue-600', 'dark:text-cyan-400');
+        } else {
+          btn.classList.remove('border-blue-500', 'bg-blue-500/10', 'text-blue-600', 'dark:text-cyan-400');
+        }
+      });
+    }
+
+    function selectCardFinish(finish) {
+      activeProfileFinish = finish;
+      updateFinishButtons();
+    }
+
+    function updateFinishButtons() {
+      document.querySelectorAll('.card-finish-btn').forEach(btn => {
+        if (btn.dataset.finish === activeProfileFinish) {
+          btn.classList.add('ring-4', 'ring-blue-500');
+        } else {
+          btn.classList.remove('ring-4', 'ring-blue-500');
+        }
+      });
+    }
+
+    function setAccountTier(tier) {
+      activeProfileTier = tier;
+      document.getElementById('profModalTierBadge').innerText = tier.toUpperCase();
+      updateTierButtons();
+    }
+
+    function updateTierButtons() {
+      document.querySelectorAll('.tier-btn').forEach(btn => {
+        if (btn.dataset.tier === activeProfileTier) {
+          btn.classList.add('border-blue-500', 'bg-blue-500/10', 'text-blue-600', 'dark:text-cyan-400');
+        } else {
+          btn.classList.remove('border-blue-500', 'bg-blue-500/10', 'text-blue-600', 'dark:text-cyan-400');
+        }
+      });
+    }
+
+    function updateAvatarPreview() {
+      const seed = document.getElementById('inputProfAvatarSeed').value.trim() || currentUser.username;
+      const url = `https://api.dicebear.com/7.x/${activeProfileStyle}/svg?seed=${encodeURIComponent(seed)}`;
+      document.getElementById('profModalAvatar').src = url;
+    }
+
+    function randomizeAvatar() {
+      const randSeed = 'user_' + Math.floor(Math.random() * 90000 + 10000);
+      document.getElementById('inputProfAvatarSeed').value = randSeed;
+      updateAvatarPreview();
+    }
+
+    function toggleDiscreetModePreview(checked) {
+      currentUser.hide_balance = checked;
+      updateNavUser();
+    }
+
+    async function saveProfileChanges(e) {
+      if (e) e.preventDefault();
+      const btn = document.getElementById('btnSaveProfile');
+      btn.disabled = true;
+      const origText = btn.innerHTML;
+      btn.innerHTML = `<span class="inline-block animate-spin mr-1">⏳</span> Saving...`;
+
+      try {
+        const payload = {
+          full_name: document.getElementById('inputProfFullName').value.trim(),
+          bio: document.getElementById('inputProfBio').value.trim(),
+          phone_number: document.getElementById('inputProfPhone').value.trim(),
+          country: document.getElementById('selectProfCountry').value,
+          avatar_style: activeProfileStyle,
+          avatar_seed: document.getElementById('inputProfAvatarSeed').value.trim(),
+          card_finish: activeProfileFinish,
+          tier: activeProfileTier,
+          preferred_currency: document.getElementById('selectProfCurrency').value,
+          hide_balance: document.getElementById('toggleHideBalance').checked,
+        };
+
+        const res = await fetch(`/api/v1/auth/profile/${currentUser.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (json.success) {
+          currentUser = json.data.user;
+          localStorage.setItem('vaultkern_session', JSON.stringify({ user: currentUser, wallet: currentWallet }));
+          
+          updateNavUser();
+          closeProfileModal();
+          showToast("Profile customizations saved successfully! ✨", 'success');
+        } else {
+          showToast(json.error?.message || "Failed to update profile", 'error');
+        }
+      } catch (err) {
+        showToast("Network error updating profile", 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = origText;
+      }
+    }
+
+    // 10. 1-Click Demo Login
     async function demoLogin(username) {
       try {
         const res = await fetch('/api/v1/auth/login', {
@@ -1198,24 +1537,38 @@
       const phoneBalance = document.getElementById('phoneBalanceDisplay');
 
       if (currentUser && currentWallet) {
-        const balNum = (Number(currentWallet.cached_balance || 0) / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        const rawBal = Number(currentWallet.cached_balance || 0) / 100;
+        const balNum = rawBal.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        const displayBal = currentUser.hide_balance ? '••••••' : `₹${balNum}`;
+        const tierName = (currentUser.tier || 'Metal').toUpperCase();
+
         slot.innerHTML = `
           <div class="flex items-center space-x-2.5">
-            <img src="${currentUser.avatar_url}" class="w-8 h-8 rounded-full bg-slate-800 border border-slate-300 dark:border-white/20">
-            <div class="hidden sm:flex flex-col text-left leading-tight">
-              <div class="flex items-center space-x-1">
-                <span class="text-xs font-black text-slate-900 dark:text-white">@${currentUser.username}</span>
-                <span class="text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-1.5 py-0.2 rounded-full border border-emerald-500/20">✓ Verified</span>
+            <button onclick="openProfileModal()" class="flex items-center space-x-2 p-1 pl-1.5 pr-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition group text-left" title="Click to customize profile & card settings">
+              <img src="${currentUser.avatar_url}" class="w-8 h-8 rounded-full bg-slate-800 border border-slate-300 dark:border-white/20 group-hover:scale-105 transition-transform">
+              <div class="hidden sm:flex flex-col leading-tight">
+                <div class="flex items-center space-x-1">
+                  <span class="text-xs font-black text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-cyan-400">@${currentUser.username}</span>
+                  <span class="text-[9px] bg-blue-500/10 text-blue-600 dark:text-cyan-400 font-extrabold px-1.5 py-0.2 rounded-full border border-blue-500/20">${tierName}</span>
+                </div>
+                <span class="text-[11px] font-mono text-slate-600 dark:text-slate-300 font-bold">${displayBal}</span>
               </div>
-              <span class="text-[11px] font-mono text-slate-600 dark:text-slate-300 font-bold">₹${balNum}</span>
-            </div>
+            </button>
+            <button onclick="openProfileModal()" class="hidden md:inline-flex text-xs font-bold px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 text-slate-700 dark:text-slate-300 transition" title="Profile Settings">⚙️</button>
             <button onclick="logout()" class="text-xs font-bold px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 text-slate-700 dark:text-slate-300 transition">Log Out</button>
           </div>
         `;
 
         if (heroCardHolder) heroCardHolder.innerText = currentUser.full_name;
-        if (heroCardBalance) heroCardBalance.innerText = `₹${balNum}`;
-        if (phoneBalance) phoneBalance.innerText = `₹${balNum}`;
+        if (heroCardBalance) heroCardBalance.innerText = displayBal;
+        if (phoneBalance) phoneBalance.innerText = displayBal;
+
+        // Apply custom card finish if user chose one
+        const heroCard = document.getElementById('interactive3DCard');
+        if (heroCard && currentUser.card_finish) {
+          heroCard.classList.remove('finish-space-grey', 'finish-obsidian', 'finish-cyan', 'finish-gold');
+          heroCard.classList.add(currentUser.card_finish);
+        }
       } else {
         slot.innerHTML = `
           <button onclick="openGmailAuthModal()" class="px-4 py-1.5 rounded-full text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-black dark:hover:text-white transition">Sign In</button>

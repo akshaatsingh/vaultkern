@@ -5,7 +5,7 @@ import { accountsService } from "../accounts/accounts.service.js";
 import { depositsService } from "../deposits/deposits.service.js";
 import { emailService } from "./email.service.js";
 import { AppError } from "../../common/errors.js";
-import { LoginInput, RegisterInput, SendOtpInput, VerifyOtpInput } from "./auth.schema.js";
+import { LoginInput, RegisterInput, SendOtpInput, VerifyOtpInput, UpdateProfileInput } from "./auth.schema.js";
 import { Account } from "../../common/types.js";
 
 export interface UserProfile {
@@ -14,9 +14,18 @@ export interface UserProfile {
   full_name: string;
   email: string;
   avatar_url: string | null;
+  bio?: string;
+  phone_number?: string;
+  country?: string;
+  preferred_currency?: string;
+  tier?: string;
+  avatar_style?: string;
+  card_finish?: string;
+  hide_balance?: boolean;
   is_email_verified?: boolean;
   auth_provider?: string;
   created_at: Date;
+  updated_at?: Date;
 }
 
 export class AuthService {
@@ -336,7 +345,12 @@ export class AuthService {
     wallet: Account;
   }> {
     const userRes = await query<UserProfile>(
-      `SELECT id, username, full_name, email, avatar_url, is_email_verified, auth_provider, created_at FROM users WHERE id = $1`,
+      `SELECT 
+         id, username, full_name, email, avatar_url, bio, phone_number,
+         country, preferred_currency, tier, avatar_style, card_finish,
+         hide_balance, is_email_verified, auth_provider, created_at, updated_at
+       FROM users 
+       WHERE id = $1`,
       [userId]
     );
 
@@ -351,6 +365,67 @@ export class AuthService {
     );
 
     return { user, wallet: walletRes.rows[0] };
+  }
+
+  async updateProfile(userId: string, input: UpdateProfileInput): Promise<{
+    user: UserProfile;
+    wallet: Account;
+  }> {
+    // 1. Fetch current user
+    const current = await this.getUserProfile(userId);
+    const existing = current.user;
+
+    // 2. Compute avatar url if avatar_style or seed changed
+    let avatarUrl = existing.avatar_url;
+    const style = input.avatar_style || existing.avatar_style || "avataaars";
+    const seed = input.avatar_seed || existing.username;
+    if (input.avatar_style || input.avatar_seed) {
+      avatarUrl = `https://api.dicebear.com/7.x/${style}/svg?seed=${encodeURIComponent(seed)}`;
+    }
+
+    // 3. Update PostgreSQL record
+    const updateRes = await query<UserProfile>(
+      `UPDATE users
+       SET
+         full_name = COALESCE($2, full_name),
+         bio = COALESCE($3, bio),
+         phone_number = COALESCE($4, phone_number),
+         country = COALESCE($5, country),
+         preferred_currency = COALESCE($6, preferred_currency),
+         tier = COALESCE($7, tier),
+         avatar_style = COALESCE($8, avatar_style),
+         avatar_url = COALESCE($9, avatar_url),
+         card_finish = COALESCE($10, card_finish),
+         hide_balance = COALESCE($11, hide_balance),
+         updated_at = NOW()
+       WHERE id = $1
+       RETURNING 
+         id, username, full_name, email, avatar_url, bio, phone_number,
+         country, preferred_currency, tier, avatar_style, card_finish,
+         hide_balance, is_email_verified, auth_provider, created_at, updated_at;`,
+      [
+        userId,
+        input.full_name?.trim() || null,
+        input.bio !== undefined ? input.bio.trim() : null,
+        input.phone_number !== undefined ? input.phone_number.trim() : null,
+        input.country?.trim() || null,
+        input.preferred_currency || null,
+        input.tier || null,
+        input.avatar_style || null,
+        avatarUrl,
+        input.card_finish || null,
+        input.hide_balance !== undefined ? input.hide_balance : null,
+      ]
+    );
+
+    if (updateRes.rows.length === 0) {
+      throw new AppError(404, "USER_NOT_FOUND", "User not found");
+    }
+
+    return {
+      user: updateRes.rows[0],
+      wallet: current.wallet,
+    };
   }
 
   async searchUsers(queryText: string, excludeUserId?: string): Promise<

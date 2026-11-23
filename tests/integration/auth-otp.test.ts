@@ -190,4 +190,61 @@ describe("Gmail OTP Authentication API", () => {
     expect(secondData.user.id).toBe(firstUser.id);
     expect(secondData.wallet.id).toBe(firstWallet.id);
   });
+
+  it("should allow updating profile customizations and persist them in PostgreSQL", async () => {
+    // 1. Sign up user via Gmail OTP
+    const send = await app.inject({
+      method: "POST",
+      url: "/api/v1/auth/send-otp",
+      payload: { email: "customizer@gmail.com" },
+    });
+    const otp = send.json().data.dev_otp;
+
+    const verify = await app.inject({
+      method: "POST",
+      url: "/api/v1/auth/verify-otp",
+      payload: { email: "customizer@gmail.com", otp, full_name: "Original Name" },
+    });
+    const userId = verify.json().data.user.id;
+
+    // 2. Update profile customizations
+    const updateRes = await app.inject({
+      method: "PUT",
+      url: `/api/v1/auth/profile/${userId}`,
+      payload: {
+        full_name: "Alexander Vance",
+        bio: "Fintech architect & digital nomad ⚡",
+        phone_number: "+91 98765 00000",
+        country: "Singapore",
+        tier: "Ultra",
+        avatar_style: "bottts",
+        card_finish: "finish-cyan",
+        hide_balance: true,
+      },
+    });
+
+    expect(updateRes.statusCode).toBe(200);
+    const updatedUser = updateRes.json().data.user;
+    expect(updatedUser.full_name).toBe("Alexander Vance");
+    expect(updatedUser.bio).toBe("Fintech architect & digital nomad ⚡");
+    expect(updatedUser.phone_number).toBe("+91 98765 00000");
+    expect(updatedUser.country).toBe("Singapore");
+    expect(updatedUser.tier).toBe("Ultra");
+    expect(updatedUser.avatar_style).toBe("bottts");
+    expect(updatedUser.card_finish).toBe("finish-cyan");
+    expect(updatedUser.hide_balance).toBe(true);
+    expect(updatedUser.avatar_url).toContain("bottts");
+
+    // 3. Verify subsequent GET /api/v1/auth/me/:id returns persisted profile data
+    const getRes = await app.inject({
+      method: "GET",
+      url: `/api/v1/auth/me/${userId}`,
+    });
+    expect(getRes.statusCode).toBe(200);
+    const fetchedUser = getRes.json().data.user;
+    expect(fetchedUser.full_name).toBe("Alexander Vance");
+    expect(fetchedUser.bio).toBe("Fintech architect & digital nomad ⚡");
+    expect(fetchedUser.country).toBe("Singapore");
+    expect(fetchedUser.tier).toBe("Ultra");
+  });
 });

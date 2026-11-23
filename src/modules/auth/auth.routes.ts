@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { authService } from "./auth.service.js";
-import { loginSchema, registerSchema, sendOtpSchema, verifyOtpSchema } from "./auth.schema.js";
+import { loginSchema, registerSchema, sendOtpSchema, verifyOtpSchema, updateProfileSchema } from "./auth.schema.js";
 
 export async function authRoutes(fastify: FastifyInstance): Promise<void> {
   // POST /api/v1/auth/send-otp (Send 6-digit verification code to Gmail)
@@ -18,6 +18,18 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post("/verify-otp", async (request, reply) => {
     const validated = verifyOtpSchema.parse(request.body);
     const result = await authService.verifyGmailOtp(validated);
+
+    return reply.status(200).send({
+      success: true,
+      data: result,
+    });
+  });
+
+  // PUT /api/v1/auth/profile/:id (Update Profile Customizations)
+  fastify.put("/profile/:id", async (request, reply) => {
+    const params = request.params as { id: string };
+    const validated = updateProfileSchema.parse(request.body);
+    const result = await authService.updateProfile(params.id, validated);
 
     return reply.status(200).send({
       success: true,

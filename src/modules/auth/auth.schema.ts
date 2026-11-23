@@ -60,3 +60,19 @@ export const verifyOtpSchema = z.object({
 });
 
 export type VerifyOtpInput = z.infer<typeof verifyOtpSchema>;
+
+// User Profile Customizations Schema
+export const updateProfileSchema = z.object({
+  full_name: z.string().min(2, "Name must be at least 2 characters").max(64).optional(),
+  bio: z.string().max(255, "Bio must be under 255 characters").optional(),
+  phone_number: z.string().max(32).optional(),
+  country: z.string().max(64).optional(),
+  preferred_currency: z.string().length(3).optional(),
+  tier: z.enum(["Standard", "Plus", "Metal", "Ultra"]).optional(),
+  avatar_style: z.enum(["avataaars", "bottts", "lorelei", "micah", "fun-emoji", "thumbs"]).optional(),
+  avatar_seed: z.string().max(64).optional(),
+  card_finish: z.enum(["finish-space-grey", "finish-obsidian", "finish-cyan", "finish-gold"]).optional(),
+  hide_balance: z.boolean().optional(),
+});
+
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
