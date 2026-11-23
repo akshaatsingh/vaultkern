@@ -19,6 +19,21 @@ export function errorHandler(
     });
   }
 
+  // Malformed JSON or Fastify Body Parsing SyntaxError
+  if (
+    error instanceof SyntaxError ||
+    error.name === "SyntaxError" ||
+    ((error as any).statusCode === 400 && !("code" in error))
+  ) {
+    return reply.status(400).send({
+      success: false,
+      error: {
+        code: "INVALID_JSON",
+        message: "Malformed JSON payload: " + error.message,
+      },
+    });
+  }
+
   // Zod Validation Errors
   if (error instanceof ZodError) {
     return reply.status(400).send({
@@ -86,6 +101,7 @@ export function errorHandler(
   }
 
   // Fallback 500 Internal Server Error
+  console.error("Unhandled API error:", error);
   request.log.error(error);
   return reply.status(500).send({
     success: false,

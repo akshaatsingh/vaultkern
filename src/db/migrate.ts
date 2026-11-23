@@ -10,10 +10,18 @@ export async function runMigrations(): Promise<void> {
   const client = await pool.connect();
   try {
     console.log("Running database migrations...");
-    const migrationPath = path.join(__dirname, "migrations", "001_init.sql");
-    const sql = fs.readFileSync(migrationPath, "utf-8");
-    await client.query(sql);
-    console.log("Database migrations applied successfully.");
+    const migrationsDir = path.join(__dirname, "migrations");
+    const files = fs
+      .readdirSync(migrationsDir)
+      .filter((f) => f.endsWith(".sql"))
+      .sort();
+
+    for (const file of files) {
+      console.log(`Applying migration: ${file}`);
+      const sql = fs.readFileSync(path.join(migrationsDir, file), "utf-8");
+      await client.query(sql);
+    }
+    console.log("All database migrations applied successfully.");
   } catch (error) {
     console.error("Failed to run migrations:", error);
     throw error;

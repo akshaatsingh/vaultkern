@@ -4,6 +4,7 @@ import { accountsRoutes } from "./modules/accounts/accounts.routes.js";
 import { depositsRoutes } from "./modules/deposits/deposits.routes.js";
 import { transfersRoutes } from "./modules/transfers/transfers.routes.js";
 import { auditRoutes } from "./modules/audit/audit.routes.js";
+import { authRoutes } from "./modules/auth/auth.routes.js";
 import { dashboardRoutes } from "./modules/dashboard/dashboard.routes.js";
 import { pool } from "./db/client.js";
 import { redis } from "./redis/client.js";
@@ -29,6 +30,7 @@ export function buildApp(): FastifyInstance {
   app.register(dashboardRoutes);
 
   // API V1 Routes
+  app.register(authRoutes, { prefix: "/api/v1/auth" });
   app.register(accountsRoutes, { prefix: "/api/v1/accounts" });
   app.register(depositsRoutes, { prefix: "/api/v1/deposits" });
   app.register(transfersRoutes, { prefix: "/api/v1/transfers" });
