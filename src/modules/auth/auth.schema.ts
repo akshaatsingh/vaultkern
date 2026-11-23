@@ -20,3 +20,43 @@ export const loginSchema = z.object({
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
+
+// Gmail OTP Schemas
+export const sendOtpSchema = z.object({
+  email: z
+    .string()
+    .email("Invalid email address")
+    .refine(
+      (email) => {
+        const lower = email.toLowerCase().trim();
+        return lower.endsWith("@gmail.com") || lower.endsWith("@googlemail.com");
+      },
+      {
+        message: "Sign-in requires a valid Gmail account (@gmail.com)",
+      }
+    ),
+});
+
+export type SendOtpInput = z.infer<typeof sendOtpSchema>;
+
+export const verifyOtpSchema = z.object({
+  email: z
+    .string()
+    .email("Invalid email address")
+    .refine(
+      (email) => {
+        const lower = email.toLowerCase().trim();
+        return lower.endsWith("@gmail.com") || lower.endsWith("@googlemail.com");
+      },
+      {
+        message: "Sign-in requires a valid Gmail account (@gmail.com)",
+      }
+    ),
+  otp: z
+    .string()
+    .length(6, "OTP must be exactly 6 digits")
+    .regex(/^\d{6}$/, "OTP must contain only numbers"),
+  full_name: z.string().max(64).optional(),
+});
+
+export type VerifyOtpInput = z.infer<typeof verifyOtpSchema>;

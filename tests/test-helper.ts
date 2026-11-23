@@ -19,7 +19,7 @@ export async function resetDatabase(): Promise<void> {
 
   // Reset database tables
   await query(`
-    TRUNCATE accounts, transactions, idempotency_keys CASCADE;
+    TRUNCATE accounts, transactions, idempotency_keys, users CASCADE;
   `);
 
   // Truncate ledger_entries specifically by temporarily bypassing the trigger
