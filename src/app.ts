@@ -4,6 +4,7 @@ import { accountsRoutes } from "./modules/accounts/accounts.routes.js";
 import { depositsRoutes } from "./modules/deposits/deposits.routes.js";
 import { transfersRoutes } from "./modules/transfers/transfers.routes.js";
 import { auditRoutes } from "./modules/audit/audit.routes.js";
+import { dashboardRoutes } from "./modules/dashboard/dashboard.routes.js";
 import { pool } from "./db/client.js";
 import { redis } from "./redis/client.js";
 
@@ -23,6 +24,9 @@ export function buildApp(): FastifyInstance {
       service: "vaultkern",
     };
   });
+
+  // Web Dashboard UI
+  app.register(dashboardRoutes);
 
   // API V1 Routes
   app.register(accountsRoutes, { prefix: "/api/v1/accounts" });

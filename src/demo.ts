@@ -11,7 +11,7 @@
 
 const API_BASE = "http://localhost:3001";
 
-async function request(path: string, options: RequestInit = {}) {
+async function request(path: string, options: RequestInit = {}): Promise<{ status: number; data: any }> {
   const url = `${API_BASE}${path}`;
   const res = await fetch(url, {
     ...options,
