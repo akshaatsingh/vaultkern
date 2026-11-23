@@ -79,7 +79,7 @@ npm run migrate
 ```bash
 npm run dev
 ```
-The API is available at `http://localhost:3000`.
+The API is available at `http://localhost:3001`.
 
 ---
 
