@@ -1509,21 +1509,48 @@
       }
     }
 
-    // 10. 1-Click Demo Login
-    async function demoLogin(username) {
+    // 10. 1-Click Demo Login & Account Provisioning Helper
+    async function getOrCreateDemoUser(username, fullName) {
       try {
-        const res = await fetch('/api/v1/auth/login', {
+        let res = await fetch('/api/v1/auth/login', {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ login: username, password: 'password123' })
         });
-        const json = await res.json();
-        if (json.success) {
-          currentUser = json.data.user;
-          currentWallet = json.data.wallet;
-          localStorage.setItem('vaultkern_session', JSON.stringify(json.data));
+        let json = await res.json();
+        if (json.success) return json.data;
+
+        // Auto-provision if doesn't exist
+        res = await fetch('/api/v1/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username,
+            full_name: fullName || (username.charAt(0).toUpperCase() + username.slice(1)),
+            email: `${username}@vaultkern.demo`,
+            password: 'password123',
+            currency: 'INR'
+          })
+        });
+        json = await res.json();
+        if (json.success) return json.data;
+      } catch (err) {
+        console.error("Demo user helper error:", err);
+      }
+      return null;
+    }
+
+    async function demoLogin(username) {
+      try {
+        const data = await getOrCreateDemoUser(username, username === 'alice' ? 'Alice Vance' : 'Bob Smith');
+        if (data) {
+          currentUser = data.user;
+          currentWallet = data.wallet;
+          localStorage.setItem('vaultkern_session', JSON.stringify(data));
           updateNavUser();
           showToast(`Welcome, ${currentUser.full_name}! 👋`, 'success');
+        } else {
+          showToast("Demo login failed.", 'error');
         }
       } catch {
         showToast("Demo login failed.", 'error');
@@ -1591,7 +1618,7 @@
       showToast("Signed out.", 'info');
     }
 
-    // 10. Concurrency Arena Tests
+    // 11. Concurrency Arena Tests
     function appendArenaLog(msg) {
       const box = document.getElementById('arenaLogs');
       const line = document.createElement('div');
@@ -1602,15 +1629,19 @@
 
     async function runIdempotencyBurst() {
       appendArenaLog("⚡ PROOF 1: Firing 10 simultaneous transfers with identical Idempotency-Key...");
-      const rA = await (await fetch('/api/v1/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({login:'alice', password:'password123'}) })).json();
-      const rB = await (await fetch('/api/v1/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({login:'bob', password:'password123'}) })).json();
+      const rA = await getOrCreateDemoUser('alice', 'Alice Vance');
+      const rB = await getOrCreateDemoUser('bob', 'Bob Smith');
+      if (!rA || !rB) {
+        appendArenaLog("❌ Error: Could not initialize demo accounts for test.");
+        return;
+      }
 
       const sharedKey = 'burst_' + Date.now();
       const reqs = Array.from({ length: 10 }).map(() =>
         fetch('/api/v1/transfers', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Idempotency-Key': sharedKey },
-          body: JSON.stringify({ from_account_id: rA.data.wallet.id, to_account_id: rB.data.wallet.id, amount: 1000 }),
+          body: JSON.stringify({ from_account_id: rA.wallet.id, to_account_id: rB.wallet.id, amount: 1000 }),
         }).then(r => r.json())
       );
 
@@ -1620,14 +1651,15 @@
 
     async function runOverdraftAttack() {
       appendArenaLog("🛡️ PROOF 2: Firing 5 simultaneous ₹80 transfers on ₹100 balance...");
-      const rA = await (await fetch('/api/v1/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({login:'alice', password:'password123'}) })).json();
-      const rB = await (await fetch('/api/v1/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({login:'bob', password:'password123'}) })).json();
+      const rA = await getOrCreateDemoUser('alice', 'Alice Vance');
+      const rB = await getOrCreateDemoUser('bob', 'Bob Smith');
+      if (!rA || !rB) return;
 
       const reqs = Array.from({ length: 5 }).map((_, i) =>
         fetch('/api/v1/transfers', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Idempotency-Key': `race_${i}_` + Date.now() },
-          body: JSON.stringify({ from_account_id: rA.data.wallet.id, to_account_id: rB.data.wallet.id, amount: 8000 }),
+          body: JSON.stringify({ from_account_id: rA.wallet.id, to_account_id: rB.wallet.id, amount: 8000 }),
         }).then(async r => ({ status: r.status, json: await r.json() }))
       );
 
@@ -1640,13 +1672,14 @@
 
     async function runDeadlockStorm() {
       appendArenaLog("🌪️ PROOF 3: Firing 20 simultaneous cross-transfers (10x A→B & 10x B→A)...");
-      const rA = await (await fetch('/api/v1/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({login:'alice', password:'password123'}) })).json();
-      const rB = await (await fetch('/api/v1/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({login:'bob', password:'password123'}) })).json();
+      const rA = await getOrCreateDemoUser('alice', 'Alice Vance');
+      const rB = await getOrCreateDemoUser('bob', 'Bob Smith');
+      if (!rA || !rB) return;
 
       const reqs = [];
       for (let i = 0; i < 10; i++) {
-        reqs.push(fetch('/api/v1/transfers', { method: 'POST', headers: {'Content-Type':'application/json','Idempotency-Key':`atob_${i}_`+Date.now()}, body: JSON.stringify({from_account_id: rA.data.wallet.id, to_account_id: rB.data.wallet.id, amount: 500}) }).then(r=>r.status));
-        reqs.push(fetch('/api/v1/transfers', { method: 'POST', headers: {'Content-Type':'application/json','Idempotency-Key':`btoa_${i}_`+Date.now()}, body: JSON.stringify({from_account_id: rB.data.wallet.id, to_account_id: rA.data.wallet.id, amount: 500}) }).then(r=>r.status));
+        reqs.push(fetch('/api/v1/transfers', { method: 'POST', headers: {'Content-Type':'application/json','Idempotency-Key':`atob_${i}_`+Date.now()}, body: JSON.stringify({from_account_id: rA.wallet.id, to_account_id: rB.wallet.id, amount: 500}) }).then(r=>r.status));
+        reqs.push(fetch('/api/v1/transfers', { method: 'POST', headers: {'Content-Type':'application/json','Idempotency-Key':`btoa_${i}_`+Date.now()}, body: JSON.stringify({from_account_id: rB.wallet.id, to_account_id: rA.wallet.id, amount: 500}) }).then(r=>r.status));
       }
 
       await Promise.all(reqs);
